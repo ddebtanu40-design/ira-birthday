@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Ira 🎉</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(270deg, #ff00cc, #3333ff, #00ffcc, #ffcc00);
+  background-size: 800% 800%;
+  animation: glowBG 15s ease infinite;
+}
+
+@keyframes glowBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* LOCK SCREEN */
+#lockscreen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.time { font-size: 60px; }
+.date { margin-bottom: 40px; }
+
+.swipe-text {
+  position: absolute;
+  bottom: 40px;
+  animation: blink 1.5s infinite;
+}
+
+/* Notification */
+#notification {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1c1c1e;
+  padding: 12px;
+  border-radius: 12px;
+  width: 85%;
+  max-width: 320px;
+  transition: 0.5s;
+  z-index: 999;
+}
+
+/* Instagram */
+#insta {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: black;
+  display: none;
+  flex-direction: column;
+}
+
+.story { margin-top: 80px; cursor: pointer; }
+
+.notify {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {opacity:1;}
+  50% {opacity:0.2;}
+  100% {opacity:1;}
+}
+
+/* Message */
+#preMessage {
+  display:none;
+  font-size:28px;
+  margin-top:40vh;
+}
+
+/* Countdown */
+#countdown { font-size:80px; display:none; }
+
+/* Main */
+#main { display:none; }
+
+.big-name {
+  font-size:70px;
+  animation: zoom 2s infinite alternate;
+}
+
+@keyframes zoom {
+  from {transform:scale(1);}
+  to {transform:scale(1.3);}
+}
+
+/* Flip */
+.flip-container {
+  perspective:1000px;
+  width:90%;
+  max-width:320px;
+  height:400px;
+  margin:20px auto;
+  position:relative;
+}
+
+.flip-card {
+  position:absolute;
+  width:100%;
+  height:100%;
+  transform:rotateY(90deg);
+  transition:1s;
+}
+
+.flip-card img {
+  width:100%;
+  height:100%;
+  border-radius:20px;
+}
+
+.flip-card.active { transform:rotateY(0); }
+
+canvas {
+  position:fixed;
+  top:0;
+  left:0;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOCK -->
+<div id="lockscreen">
+  <div class="time" id="time"></div>
+  <div class="date" id="date"></div>
+  <div class="swipe-text">Swipe up to unlock 🔓</div>
+</div>
+
+<!-- Notification -->
+<div id="notification">
+  <strong>Instagram</strong><br>
+  ira added to their story
+</div>
+
+<!-- Instagram -->
+<div id="insta">
+  <div class="story" onclick="startStory()">
+    <div class="notify">1 New Story</div>
+    <img src="img1.jpg" width="90" style="border-radius:50%">
+    <p>ira</p>
+  </div>
+</div>
+
+<!-- Pre Message -->
+<div id="preMessage">🎉 Ira, this surprise is for you…</div>
+
+<!-- Countdown -->
+<div id="countdown"></div>
+
+<!-- Main -->
+<div id="main">
+  <h1 class="big-name">IRA 🎆</h1>
+  <h2>Happy Birthday Ira 🎂</h2>
+
+  <div class="flip-container">
+    <div class="flip-card active"><img src="img1.jpg"></div>
+    <div class="flip-card"><img src="img2.jpg"></div>
+    <div class="flip-card"><img src="img3.jpg"></div>
+    <div class="flip-card"><img src="img4.jpg"></div>
+    <div class="flip-card"><img src="img5.jpg"></div>
+    <div class="flip-card"><img src="img6.jpg"></div>
+    <div class="flip-card"><img src="img7.jpg"></div>
+    <div class="flip-card"><img src="img8.jpg"></div>
+  </div>
+
+  <p id="message"></p>
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+// TIME
+setInterval(()=>{
+  let now=new Date();
+  time.innerHTML=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  date.innerHTML=now.toDateString();
+},1000);
+
+// SWIPE
+let startY=0;
+document.addEventListener("touchstart",e=>startY=e.touches[0].clientY);
+document.addEventListener("touchend",e=>{
+  if(startY - e.changedTouches[0].clientY > 100) unlock();
+});
+
+function unlock(){
+  if(navigator.vibrate) navigator.vibrate([50,30,50]);
+  lockscreen.style.display="none";
+  insta.style.display="flex";
+
+  setTimeout(()=>notification.style.top="20px",500);
+  setTimeout(()=>notification.style.top="-100px",3500);
+}
+
+// STORY FLOW
+function startStory(){
+  insta.style.display="none";
+  preMessage.style.display="block";
+
+  setTimeout(()=>{
+    preMessage.style.display="none";
+    countdown.style.display="block";
+
+    let c=3;
+    countdown.innerHTML=c;
+
+    let int=setInterval(()=>{
+      c--;
+      if(c>0) countdown.innerHTML=c;
+      else{
+        clearInterval(int);
+        countdown.style.display="none";
+        showMain();
+      }
+    },1000);
+  },2000);
+}
+
+// MAIN
+function showMain(){
+  main.style.display="block";
+  typing();
+  playAudio();
+  fireworks();
+}
+
+// FLIP
+let i=0, cards=document.querySelectorAll(".flip-card");
+setInterval(()=>{
+  cards[i].classList.remove("active");
+  i=(i+1)%cards.length;
+  cards[i].classList.add("active");
+},3000);
+
+// TEXT
+let txt="Happy Birthday, Ira! 🎉 You are my best friend. Thank you for always being there!";
+let j=0;
+function typing(){
+  if(j<txt.length){
+    message.innerHTML+=txt[j++];
+    setTimeout(typing,40);
+  }
+}
+
+// AUDIO
+function playAudio(){
+  let v=new Audio("voice.mp3");
+  let m=new Audio("https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid");
+  m.volume=0.3;
+  v.play(); m.play();
+}
+
+// FIREWORKS
+let c=document.getElementById("fireworks"),ctx=c.getContext("2d");
+c.width=innerWidth;c.height=innerHeight;
+let p=[];
+function fireworks(){
+  setInterval(()=>create(Math.random()*c.width,Math.random()*c.height/2),800);
+  animate();
+}
+function create(x,y){
+  for(let i=0;i<50;i++) p.push({x,y,dx:(Math.random()-0.5)*5,dy:(Math.random()-0.5)*5,life:100});
+}
+function animate(){
+  ctx.fillStyle="rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,c.width,c.height);
+  p.forEach((a,i)=>{
+    ctx.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
+    ctx.fillRect(a.x,a.y,3,3);
+    a.x+=a.dx;a.y+=a.dy;a.life--;
+    if(a.life<=0)p.splice(i,1);
+  });
+  requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
