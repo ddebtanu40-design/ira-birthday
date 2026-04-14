@@ -23,7 +23,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* LOCK SCREEN */
+/* LOCK */
 #lockscreen {
   position: fixed;
   width: 100%;
@@ -68,9 +68,13 @@ body {
   background: black;
   display: none;
   flex-direction: column;
+  align-items: center;
 }
 
-.story { margin-top: 80px; cursor: pointer; }
+.story {
+  margin-top: 100px;
+  cursor: pointer;
+}
 
 .notify {
   animation: blink 1s infinite;
@@ -90,10 +94,15 @@ body {
 }
 
 /* Countdown */
-#countdown { font-size:80px; display:none; }
+#countdown {
+  font-size:80px;
+  display:none;
+}
 
 /* Main */
-#main { display:none; }
+#main {
+  display:none;
+}
 
 .big-name {
   font-size:70px;
@@ -129,7 +138,9 @@ body {
   border-radius:20px;
 }
 
-.flip-card.active { transform:rotateY(0); }
+.flip-card.active {
+  transform:rotateY(0);
+}
 
 canvas {
   position:fixed;
@@ -163,7 +174,7 @@ canvas {
   </div>
 </div>
 
-<!-- Pre Message -->
+<!-- Message -->
 <div id="preMessage">🎉 Ira, this surprise is for you…</div>
 
 <!-- Countdown -->
@@ -194,60 +205,79 @@ canvas {
 // TIME
 setInterval(()=>{
   let now=new Date();
-  time.innerHTML=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  date.innerHTML=now.toDateString();
+  document.getElementById("time").innerHTML=
+    now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  document.getElementById("date").innerHTML=now.toDateString();
 },1000);
 
 // SWIPE
 let startY=0;
-document.addEventListener("touchstart",e=>startY=e.touches[0].clientY);
-document.addEventListener("touchend",e=>{
-  if(startY - e.changedTouches[0].clientY > 100) unlock();
+document.addEventListener("touchstart",e=>{
+  startY=e.touches[0].clientY;
 });
 
+document.addEventListener("touchend",e=>{
+  let endY=e.changedTouches[0].clientY;
+  if(startY - endY > 100){
+    unlock();
+  }
+});
+
+// FIXED UNLOCK
 function unlock(){
   if(navigator.vibrate) navigator.vibrate([50,30,50]);
-  lockscreen.style.display="none";
-  insta.style.display="flex";
 
-  setTimeout(()=>notification.style.top="20px",500);
-  setTimeout(()=>notification.style.top="-100px",3500);
+  document.getElementById("lockscreen").style.display="none";
+  document.getElementById("insta").style.display="flex";
+
+  let notif=document.getElementById("notification");
+
+  setTimeout(()=>{notif.style.top="20px";},500);
+  setTimeout(()=>{notif.style.top="-100px";},3500);
 }
 
-// STORY FLOW
+// STORY FLOW FIXED
 function startStory(){
-  insta.style.display="none";
-  preMessage.style.display="block";
+  document.getElementById("insta").style.display="none";
+
+  let msg=document.getElementById("preMessage");
+  msg.style.display="block";
 
   setTimeout(()=>{
-    preMessage.style.display="none";
+    msg.style.display="none";
+
+    let countdown=document.getElementById("countdown");
     countdown.style.display="block";
 
     let c=3;
     countdown.innerHTML=c;
 
-    let int=setInterval(()=>{
+    let interval=setInterval(()=>{
       c--;
-      if(c>0) countdown.innerHTML=c;
-      else{
-        clearInterval(int);
+      if(c>0){
+        countdown.innerHTML=c;
+      } else {
+        clearInterval(interval);
         countdown.style.display="none";
         showMain();
       }
     },1000);
+
   },2000);
 }
 
 // MAIN
 function showMain(){
-  main.style.display="block";
+  document.getElementById("main").style.display="block";
   typing();
   playAudio();
-  fireworks();
+  startFireworks();
 }
 
 // FLIP
-let i=0, cards=document.querySelectorAll(".flip-card");
+let i=0;
+let cards=document.querySelectorAll(".flip-card");
+
 setInterval(()=>{
   cards[i].classList.remove("active");
   i=(i+1)%cards.length;
@@ -257,9 +287,11 @@ setInterval(()=>{
 // TEXT
 let txt="Happy Birthday, Ira! 🎉 You are my best friend. Thank you for always being there!";
 let j=0;
+
 function typing(){
   if(j<txt.length){
-    message.innerHTML+=txt[j++];
+    document.getElementById("message").innerHTML+=txt[j];
+    j++;
     setTimeout(typing,40);
   }
 }
@@ -268,30 +300,56 @@ function typing(){
 function playAudio(){
   let v=new Audio("voice.mp3");
   let m=new Audio("https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid");
+
   m.volume=0.3;
-  v.play(); m.play();
+  v.play();
+  m.play();
 }
 
 // FIREWORKS
-let c=document.getElementById("fireworks"),ctx=c.getContext("2d");
-c.width=innerWidth;c.height=innerHeight;
-let p=[];
-function fireworks(){
-  setInterval(()=>create(Math.random()*c.width,Math.random()*c.height/2),800);
+let canvas=document.getElementById("fireworks");
+let ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+function createFirework(x,y){
+  for(let i=0;i<50;i++){
+    particles.push({
+      x:x,
+      y:y,
+      dx:(Math.random()-0.5)*5,
+      dy:(Math.random()-0.5)*5,
+      life:100
+    });
+  }
+}
+
+function startFireworks(){
+  setInterval(()=>{
+    createFirework(Math.random()*canvas.width, Math.random()*canvas.height/2);
+  },800);
+
   animate();
 }
-function create(x,y){
-  for(let i=0;i<50;i++) p.push({x,y,dx:(Math.random()-0.5)*5,dy:(Math.random()-0.5)*5,life:100});
-}
+
 function animate(){
   ctx.fillStyle="rgba(0,0,0,0.2)";
-  ctx.fillRect(0,0,c.width,c.height);
-  p.forEach((a,i)=>{
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  particles.forEach((p,i)=>{
     ctx.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
-    ctx.fillRect(a.x,a.y,3,3);
-    a.x+=a.dx;a.y+=a.dy;a.life--;
-    if(a.life<=0)p.splice(i,1);
+    ctx.fillRect(p.x,p.y,3,3);
+
+    p.x+=p.dx;
+    p.y+=p.dy;
+    p.life--;
+
+    if(p.life<=0) particles.splice(i,1);
   });
+
   requestAnimationFrame(animate);
 }
 </script>
